@@ -7,7 +7,7 @@ import { toast } from "@/hooks/use-toast";
 const Newsletter = () => {
   const [email, setEmail] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (email) {
       toast({

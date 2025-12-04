@@ -1,17 +1,11 @@
 import { useState } from "react";
 import { ShoppingBag, Heart, Star, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { cn } from "@/lib/utils";
 import ProductQuickView from "./ProductQuickView";
 
-interface ProductCardProps {
-  product: Product;
-  index: number;
-}
-
-const ProductCard = ({ product, index }: ProductCardProps) => {
+const ProductCard = ({ product, index }) => {
   const { addToCart } = useCart();
   const [isHovered, setIsHovered] = useState(false);
   const [isLiked, setIsLiked] = useState(false);

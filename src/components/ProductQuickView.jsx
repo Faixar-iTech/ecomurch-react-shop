@@ -2,17 +2,10 @@ import { ShoppingBag, Heart, Star, X, Minus, Plus } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { cn } from "@/lib/utils";
 
-interface ProductQuickViewProps {
-  product: Product;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-const ProductQuickView = ({ product, open, onOpenChange }: ProductQuickViewProps) => {
+const ProductQuickView = ({ product, open, onOpenChange }) => {
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
