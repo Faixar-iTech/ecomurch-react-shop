@@ -23,7 +23,7 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <a href="#" className="inline-block mb-4">
               <span className="text-3xl font-display font-bold text-gradient-gold">
-                LUXE
+                LUXEO
               </span>
             </a>
             <p className="text-muted-foreground mb-6 max-w-xs">
@@ -67,7 +67,7 @@ const Footer = () => {
         {/* Bottom */}
         <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © 2024 LUXE. All rights reserved.
+            © 2024 LUXEOO. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             <img
