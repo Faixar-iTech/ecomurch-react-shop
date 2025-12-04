@@ -4,117 +4,153 @@ import { Image as ImageIcon } from 'lucide-react';
 const ImageDisplay = ({ images, alt, className, fallbackClassName }) => {
   const [imageUrl, setImageUrl] = useState('');
   const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!images || (!Array.isArray(images) && typeof images !== 'string')) {
+    if (!images) {
       setImageUrl('');
-      setHasError(false);
+      setIsLoading(false);
       return;
     }
 
-    const fixImageData = () => {
-      // Case 1: Already a valid URL or data URL string
-      if (typeof images === 'string') {
-        if (images.startsWith('http') || images.startsWith('data:image/')) {
-          return images;
+    const processImages = () => {
+      try {
+        console.log('Processing images input:', images);
+        
+        // Case 1: Single string (URL or base64)
+        if (typeof images === 'string') {
+          if (images.startsWith('http') || images.startsWith('https')) {
+            return images; // Regular URL
+          }
+          if (images.startsWith('data:image/')) {
+            return images; // Already data URL
+          }
+          // Check if it's base64 data without prefix
+          if (images.startsWith('/9j/') || images.startsWith('iVBOR') || 
+              images.startsWith('UklGR') || images.startsWith('R0lGOD')) {
+            return `data:image/jpeg;base64,${images}`;
+          }
+          return ''; // Invalid string
         }
-        // If it's a base64 string without data prefix
-        if (images.length > 100 && 
-            (images.startsWith('/9j/') || images.startsWith('iVBOR') || 
-             images.startsWith('UklGR') || images.startsWith('PHN2Zy'))) {
-          return `data:image/jpeg;base64,${images}`;
+
+        // Case 2: Array format (your main case)
+        if (Array.isArray(images)) {
+          // First, check for any direct URLs in the array
+          for (const item of images) {
+            if (typeof item === 'string' && item.startsWith('http')) {
+              return item;
+            }
+          }
+
+          // Handle your specific format: ['data:image/jpeg', 'base64,...']
+          if (images.length >= 2) {
+            const [first, second] = images;
+            
+            // Ensure we have strings
+            if (typeof first !== 'string' || typeof second !== 'string') {
+              return '';
+            }
+
+            console.log('Processing array format:', { first, second: second.substring(0, 50) + '...' });
+
+            // Clean the second item - remove 'base64,' prefix
+            const cleanSecond = second.replace(/^base64,/, '');
+            
+            // Check if it's a URL (your problematic case)
+            if (cleanSecond.startsWith('http')) {
+              console.log('Detected URL after cleaning:', cleanSecond.substring(0, 50) + '...');
+              return cleanSecond; // Return the URL directly
+            }
+            
+            // Check if it's actual base64 data
+            if (cleanSecond.startsWith('/9j/') || cleanSecond.startsWith('iVBOR') || 
+                cleanSecond.startsWith('UklGR') || cleanSecond.startsWith('R0lGOD')) {
+              
+              // Ensure first item has proper data: prefix
+              const mimeType = first.startsWith('data:') ? first : `data:${first}`;
+              const result = `${mimeType};base64,${cleanSecond}`;
+              console.log('Created data URL with base64');
+              return result;
+            }
+          }
+
+          // Try to find any base64-like string in the array
+          for (const item of images) {
+            if (typeof item === 'string' && item.length > 100) {
+              if (item.startsWith('/9j/') || item.startsWith('iVBOR') || 
+                  item.startsWith('UklGR') || item.startsWith('R0lGOD')) {
+                return `data:image/jpeg;base64,${item}`;
+              }
+            }
+          }
         }
+
+        return '';
+      } catch (error) {
+        console.error('Error processing image data:', error);
         return '';
       }
-
-      // Case 2: Array of image data
-      if (Array.isArray(images)) {
-        // If the array contains a valid URL as first element
-        const firstItem = images[0];
-        if (firstItem && typeof firstItem === 'string') {
-          // Check if it's already a valid URL or data URL
-          if (firstItem.startsWith('http') || firstItem.startsWith('data:image/')) {
-            return firstItem;
-          }
-          
-          // Handle the specific case from your comment
-          if (firstItem === 'data:image/jpeg' || firstItem === 'image/jpeg') {
-            if (images.length >= 2) {
-              const secondItem = images[1];
-              let base64Data = secondItem;
-              
-              // Clean up base64 data
-              if (base64Data.startsWith('base64,')) {
-                base64Data = base64Data.substring(7);
-              }
-              
-              // Ensure mime type has data: prefix
-              const mimeType = firstItem.startsWith('data:') ? firstItem : `data:${firstItem}`;
-              return `${mimeType};base64,${base64Data}`;
-            }
-          }
-          
-          // Handle webp data URLs
-          if (firstItem === 'data:image/webp' && images.length >= 2) {
-            let base64Data = images[1];
-            if (base64Data.startsWith('base64,')) {
-              base64Data = base64Data.substring(7);
-            }
-            return `${firstItem};base64,${base64Data}`;
-          }
-        }
-        
-        // Try to find any valid base64 image in the array
-        for (const item of images) {
-          if (typeof item === 'string' && item.length > 100) {
-            // Check for various base64 image signatures
-            if (item.startsWith('/9j/') || // JPEG
-                item.startsWith('iVBOR') || // PNG
-                item.startsWith('UklGR') || // WebP
-                item.startsWith('R0lGOD') || // GIF
-                item.startsWith('PHN2Zy')) { // SVG
-              return `data:image/jpeg;base64,${item}`;
-            }
-          }
-        }
-      }
-      
-      return '';
     };
 
-    const url = fixImageData();
+    const url = processImages();
+    console.log('Final URL:', url ? url.substring(0, 100) + '...' : 'No valid image found');
+    
     setImageUrl(url);
     setHasError(false);
+    setIsLoading(false);
   }, [images]);
 
-  // Reset error state when images change
-  useEffect(() => {
+  const handleError = (e) => {
+    console.error('Image load failed:', imageUrl?.substring(0, 100) + '...');
+    setHasError(true);
+    setIsLoading(false);
+  };
+
+  const handleLoad = () => {
+    console.log('Image loaded successfully');
     setHasError(false);
-  }, [images]);
+    setIsLoading(false);
+  };
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div 
+        className={`flex flex-col items-center justify-center bg-gray-100 animate-pulse rounded-lg ${
+          fallbackClassName || 'w-full h-64'
+        }`}
+      >
+        <div className="h-12 w-12 rounded-full bg-gray-300 mb-2"></div>
+        <div className="h-4 w-24 bg-gray-300 rounded"></div>
+      </div>
+    );
+  }
+
+  // Show fallback on error or no image
   if (!imageUrl || hasError) {
     return (
       <div 
-        className={`flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800 ${
-          fallbackClassName || 'min-h-[200px] min-w-[200px]'
+        className={`flex flex-col items-center justify-center bg-gray-100 rounded-lg ${
+          fallbackClassName || 'w-full h-64'
         }`}
       >
-        <ImageIcon className="h-12 w-12 text-gray-400 dark:text-gray-600 mb-2" />
-        <span className="text-sm text-gray-500 dark:text-gray-400">
-          {alt || 'No Image Available'}
+        <ImageIcon className="h-12 w-12 text-gray-400 mb-2" />
+        <span className="text-sm text-gray-500">
+          {alt || 'No image available'}
         </span>
       </div>
     );
   }
 
+  // Show the image
   return (
     <img
       src={imageUrl}
       alt={alt || 'Product image'}
-      className={`object-cover ${className || ''}`}
-      onError={() => setHasError(true)}
+      className={`${className || 'w-full h-auto object-cover'}`}
+      onError={handleError}
+      onLoad={handleLoad}
       loading="lazy"
-      onLoad={() => setHasError(false)}
     />
   );
 };
