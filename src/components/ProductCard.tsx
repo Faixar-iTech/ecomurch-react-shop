@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Product } from "@/types/product";
 import { useCart } from "@/context/CartContext";
 import { cn } from "@/lib/utils";
+import ProductQuickView from "./ProductQuickView";
 
 interface ProductCardProps {
   product: Product;
@@ -14,6 +15,7 @@ const ProductCard = ({ product, index }: ProductCardProps) => {
   const { addToCart } = useCart();
   const [isHovered, setIsHovered] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
 
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -53,7 +55,7 @@ const ProductCard = ({ product, index }: ProductCardProps) => {
             variant="secondary"
             size="icon"
             className="h-12 w-12 rounded-full"
-            onClick={() => window.alert(`Quick view: ${product.name}`)}
+            onClick={() => setIsQuickViewOpen(true)}
           >
             <Eye className="h-5 w-5" />
           </Button>
@@ -128,6 +130,12 @@ const ProductCard = ({ product, index }: ProductCardProps) => {
           Add to Cart
         </Button>
       </div>
+
+      <ProductQuickView
+        product={product}
+        open={isQuickViewOpen}
+        onOpenChange={setIsQuickViewOpen}
+      />
     </div>
   );
 };
