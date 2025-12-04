@@ -16,7 +16,7 @@ const Contact = () => {
     {
       icon: <Mail className="h-6 w-6" />,
       title: "Email Us",
-      details: "support@luxe.com",
+      details: "support@luxeo.com",
       description: "We'll reply within 24 hours"
     },
     {

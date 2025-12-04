@@ -67,12 +67,12 @@ const Navbar = () => {
             <div className="relative">
               <div className="absolute -inset-1 bg-gradient-to-r from-primary via-gold to-primary rounded-lg blur opacity-30 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
               <span className="relative text-2xl lg:text-3xl font-display font-bold bg-gradient-to-r from-primary to-gold bg-clip-text text-transparent">
-                LUXE
+                LUXEO
               </span>
             </div>
-            <span className="hidden sm:inline text-xs font-medium text-muted-foreground bg-secondary px-2 py-1 rounded-full">
-              Premium
-            </span>
+          <span className="p-3"></span>
+             
+
           </Link>
 
           {/* Desktop Navigation */}

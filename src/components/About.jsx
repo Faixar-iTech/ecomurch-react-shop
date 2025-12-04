@@ -37,7 +37,7 @@ const About = () => {
             Redefining Luxury, One <span className="text-primary">Experience</span> at a Time
           </h1>
           <p className="text-xl text-muted-foreground">
-            At Luxe, we believe true luxury lies in the details, the craftsmanship, 
+            At Luxeoo, we believe true luxury lies in the details, the craftsmanship, 
             and the stories behind every product we curate.
           </p>
         </div>
@@ -59,7 +59,7 @@ const About = () => {
           <div>
             <h2 className="text-3xl font-bold mb-6">Our Story</h2>
             <p className="text-lg text-muted-foreground mb-6">
-              Founded in 2018, Luxe began as a passion project between a designer 
+              Founded in 2018, Luxeoo began as a passion project between a designer 
               and an artisan who shared a vision: to create a luxury brand that 
               values quality over quantity and craftsmanship over mass production.
             </p>
