@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import ProductEntry from "./pages/ProductEntry";
 import ProductManagement from "./pages/ProductManagement";
+import APIDebugger from '@/components/APIDebugger';
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
            <Route path="/admin/products/new" element={<ProductEntry />} /> {/* Add this route */}
           <Route path="/admin/products" element={<ProductManagement />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/debug-api" element={<APIDebugger />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
