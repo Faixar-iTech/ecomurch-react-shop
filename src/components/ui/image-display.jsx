@@ -6,48 +6,75 @@ const ImageDisplay = ({ images, alt, className, fallbackClassName }) => {
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    if (!images || !Array.isArray(images) || images.length === 0) {
+    if (!images || (!Array.isArray(images) && typeof images !== 'string')) {
       setImageUrl('');
+      setHasError(false);
       return;
     }
 
-    const fixImageData = (imgArray) => {
-      // Case 1: Already valid single URL
-      if (imgArray.length === 1) {
-        const single = imgArray[0];
-        if (single.startsWith('http') || single.startsWith('data:image/')) {
-          return single;
+    const fixImageData = () => {
+      // Case 1: Already a valid URL or data URL string
+      if (typeof images === 'string') {
+        if (images.startsWith('http') || images.startsWith('data:image/')) {
+          return images;
         }
+        // If it's a base64 string without data prefix
+        if (images.length > 100 && 
+            (images.startsWith('/9j/') || images.startsWith('iVBOR') || 
+             images.startsWith('UklGR') || images.startsWith('PHN2Zy'))) {
+          return `data:image/jpeg;base64,${images}`;
+        }
+        return '';
       }
-      
-      // Case 2: Your specific case ["data:image/jpeg", "base64,..."]
-      if (imgArray.length >= 2) {
-        const [mimeType, base64Data] = imgArray;
-        if (mimeType && base64Data) {
-          // Clean up the data
-          let cleanMimeType = mimeType.trim();
-          let cleanBase64 = base64Data.trim();
-          
-          // If mimeType doesn't have "data:" prefix, add it
-          if (cleanMimeType === 'image/jpeg' || cleanMimeType === 'image/png') {
-            cleanMimeType = `data:${cleanMimeType}`;
+
+      // Case 2: Array of image data
+      if (Array.isArray(images)) {
+        // If the array contains a valid URL as first element
+        const firstItem = images[0];
+        if (firstItem && typeof firstItem === 'string') {
+          // Check if it's already a valid URL or data URL
+          if (firstItem.startsWith('http') || firstItem.startsWith('data:image/')) {
+            return firstItem;
           }
           
-          // Remove "base64," prefix if present
-          if (cleanBase64.startsWith('base64,')) {
-            cleanBase64 = cleanBase64.substring(7);
+          // Handle the specific case from your comment
+          if (firstItem === 'data:image/jpeg' || firstItem === 'image/jpeg') {
+            if (images.length >= 2) {
+              const secondItem = images[1];
+              let base64Data = secondItem;
+              
+              // Clean up base64 data
+              if (base64Data.startsWith('base64,')) {
+                base64Data = base64Data.substring(7);
+              }
+              
+              // Ensure mime type has data: prefix
+              const mimeType = firstItem.startsWith('data:') ? firstItem : `data:${firstItem}`;
+              return `${mimeType};base64,${base64Data}`;
+            }
           }
           
-          return `${cleanMimeType};base64,${cleanBase64}`;
+          // Handle webp data URLs
+          if (firstItem === 'data:image/webp' && images.length >= 2) {
+            let base64Data = images[1];
+            if (base64Data.startsWith('base64,')) {
+              base64Data = base64Data.substring(7);
+            }
+            return `${firstItem};base64,${base64Data}`;
+          }
         }
-      }
-      
-      // Case 3: Try to find any valid image data
-      for (const item of imgArray) {
-        if (typeof item === 'string' && item.length > 100) {
-          // Check if it looks like base64
-          if (item.startsWith('/9j/') || item.startsWith('iVBOR') || item.includes('base64')) {
-            return `data:image/jpeg;base64,${item.replace('base64,', '')}`;
+        
+        // Try to find any valid base64 image in the array
+        for (const item of images) {
+          if (typeof item === 'string' && item.length > 100) {
+            // Check for various base64 image signatures
+            if (item.startsWith('/9j/') || // JPEG
+                item.startsWith('iVBOR') || // PNG
+                item.startsWith('UklGR') || // WebP
+                item.startsWith('R0lGOD') || // GIF
+                item.startsWith('PHN2Zy')) { // SVG
+              return `data:image/jpeg;base64,${item}`;
+            }
           }
         }
       }
@@ -55,16 +82,27 @@ const ImageDisplay = ({ images, alt, className, fallbackClassName }) => {
       return '';
     };
 
-    const url = fixImageData(images);
+    const url = fixImageData();
     setImageUrl(url);
+    setHasError(false);
+  }, [images]);
+
+  // Reset error state when images change
+  useEffect(() => {
     setHasError(false);
   }, [images]);
 
   if (!imageUrl || hasError) {
     return (
-      <div className={`flex flex-col items-center justify-center bg-secondary ${fallbackClassName || ''}`}>
-        <ImageIcon className="h-8 w-8 text-muted-foreground mb-2" />
-        <span className="text-xs text-muted-foreground">No Image</span>
+      <div 
+        className={`flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-800 ${
+          fallbackClassName || 'min-h-[200px] min-w-[200px]'
+        }`}
+      >
+        <ImageIcon className="h-12 w-12 text-gray-400 dark:text-gray-600 mb-2" />
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          {alt || 'No Image Available'}
+        </span>
       </div>
     );
   }
@@ -72,10 +110,11 @@ const ImageDisplay = ({ images, alt, className, fallbackClassName }) => {
   return (
     <img
       src={imageUrl}
-      alt={alt}
-      className={className}
+      alt={alt || 'Product image'}
+      className={`object-cover ${className || ''}`}
       onError={() => setHasError(true)}
       loading="lazy"
+      onLoad={() => setHasError(false)}
     />
   );
 };
