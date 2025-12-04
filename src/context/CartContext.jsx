@@ -1,25 +1,12 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { Product, CartItem } from "@/types/product";
 
-interface CartContextType {
-  items: CartItem[];
-  addToCart: (product: Product) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
-  clearCart: () => void;
-  totalItems: number;
-  totalPrice: number;
-  isCartOpen: boolean;
-  setIsCartOpen: (open: boolean) => void;
-}
+const CartContext = createContext();
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
-
-export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [items, setItems] = useState<CartItem[]>([]);
+export const CartProvider = ({ children }) => {
+  const [items, setItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  const addToCart = useCallback((product: Product) => {
+  const addToCart = useCallback((product) => {
     setItems((currentItems) => {
       const existingItem = currentItems.find((item) => item.id === product.id);
       if (existingItem) {
@@ -34,13 +21,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsCartOpen(true);
   }, []);
 
-  const removeFromCart = useCallback((productId: string) => {
+  const removeFromCart = useCallback((productId) => {
     setItems((currentItems) =>
       currentItems.filter((item) => item.id !== productId)
     );
   }, []);
 
-  const updateQuantity = useCallback((productId: string, quantity: number) => {
+  const updateQuantity = useCallback((productId, quantity) => {
     if (quantity < 1) {
       removeFromCart(productId);
       return;

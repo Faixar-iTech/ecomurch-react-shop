@@ -1,6 +1,4 @@
-import { Product } from "@/types/product";
-
-export const products: Product[] = [
+export const products = [
   {
     id: "1",
     name: "Leather Executive Watch",
