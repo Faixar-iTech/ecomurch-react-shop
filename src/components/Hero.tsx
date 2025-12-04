@@ -41,11 +41,11 @@ const Hero = () => {
               className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-up"
               style={{ animationDelay: "0.4s" }}
             >
-              <Button variant="hero" size="xl">
+              <Button variant="hero" size="xl" onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}>
                 Shop Now
                 <ArrowRight className="h-5 w-5" />
               </Button>
-              <Button variant="outline-gold" size="xl">
+              <Button variant="outline-gold" size="xl" onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}>
                 View Collections
               </Button>
             </div>
@@ -98,11 +98,15 @@ const Hero = () => {
       </div>
 
       {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 border-2 border-muted-foreground rounded-full flex justify-center pt-2">
+      <button 
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer"
+        onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
+        aria-label="Scroll to products"
+      >
+        <div className="w-6 h-10 border-2 border-muted-foreground rounded-full flex justify-center pt-2 hover:border-primary transition-colors">
           <div className="w-1.5 h-3 bg-primary rounded-full animate-pulse" />
         </div>
-      </div>
+      </button>
     </section>
   );
 };

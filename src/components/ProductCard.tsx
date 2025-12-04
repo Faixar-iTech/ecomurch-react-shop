@@ -53,6 +53,7 @@ const ProductCard = ({ product, index }: ProductCardProps) => {
             variant="secondary"
             size="icon"
             className="h-12 w-12 rounded-full"
+            onClick={() => window.alert(`Quick view: ${product.name}`)}
           >
             <Eye className="h-5 w-5" />
           </Button>
