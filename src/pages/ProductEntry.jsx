@@ -211,7 +211,7 @@ const ProductEntry = () => {
         <div className="mb-4 p-3 bg-secondary rounded-lg text-sm">
           <div className="font-medium mb-1">Debug Info:</div>
           <div>Categories loaded: {categories.length}</div>
-          <div>API Base URL: https://localhost:7231/api</div>
+          <div>API Base URL: https://localhost:44357/api</div>
           <div>Check browser console for detailed API logs</div>
         </div>
 

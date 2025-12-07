@@ -11,7 +11,7 @@ const APIDebugger = () => {
   const [error, setError] = useState(null);
   const [data, setData] = useState({ categories: [], products: [] });
   const [apiInfo, setApiInfo] = useState({
-    url: 'https://localhost:7231/api',
+    url: 'http://172.20.1.17:82/',
     corsEnabled: false,
     serverRunning: false
   });
@@ -222,7 +222,7 @@ const APIDebugger = () => {
                   <div className="font-medium mb-2">If API is not working:</div>
                   <ul className="text-sm space-y-1 list-disc pl-4">
                     <li>Make sure ASP.NET API is running: <code>dotnet run</code></li>
-                    <li>Check if API is accessible: <a href="https://localhost:7231/swagger" target="_blank" className="text-blue-600 hover:underline">https://localhost:7231/swagger</a></li>
+                    <li>Check if API is accessible: <a href="http://172.20.1.17:82/swagger" target="_blank" className="text-blue-600 hover:underline">http://172.20.1.17:82/swagger</a></li>
                     <li>Verify CORS is configured in ASP.NET</li>
                     <li>Check browser console for detailed error logs</li>
                   </ul>
@@ -236,21 +236,21 @@ const APIDebugger = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => window.open('https://localhost:7231/swagger', '_blank')}
+              onClick={() => window.open('http://172.20.1.17:82/swagger', '_blank')}
             >
               Open Swagger
             </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => window.open('https://localhost:7231/api/Categories', '_blank')}
+              onClick={() => window.open('http://172.20.1.17:82/api/Categories', '_blank')}
             >
               Test Categories Endpoint
             </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => window.open('https://localhost:7231/api/Products', '_blank')}
+              onClick={() => window.open('http://172.20.1.17:82/api/Products', '_blank')}
             >
               Test Products Endpoint
             </Button>

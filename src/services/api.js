@@ -1,31 +1,38 @@
-// src/services/api.js
 import axios from 'axios';
 
-// Your ASP.NET Core API base URL (from Swagger)
-const API_BASE_URL = 'https://localhost:7231/api';
+// Debug log to check environment variable
+console.log('VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
+console.log('All env variables:', import.meta.env);
 
-// Create axios instance with default config
+// Add fallback for development
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+  (import.meta.env.MODE === 'development' ? 'https://localhost:44357/api' : '/api');
+
+console.log('Using API_BASE_URL:', API_BASE_URL);
+
+// Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // 10 second timeout
+  timeout: 10000,
 });
 
-// Add request interceptor
+// Request interceptor
 api.interceptors.request.use(
   (config) => {
-    // Add any auth tokens here if needed
+    // You can add auth token here if needed
+    // const token = localStorage.getItem('token');
+    // if (token) {
+    //   config.headers.Authorization = `Bearer ${token}`;
+    // }
     return config;
   },
-  (error) => {
-    console.error('Request Error:', error);
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Add response interceptor
+// Response interceptor
 api.interceptors.response.use(
   (response) => {
     console.log(`API Response [${response.config.method.toUpperCase()}] ${response.config.url}:`, response.status);
@@ -33,114 +40,102 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response) {
-      // The request was made and the server responded with a status code
       console.error('API Error Response:', {
         status: error.response.status,
         data: error.response.data,
         url: error.config?.url,
       });
+      
+      // Handle specific status codes
+      if (error.response.status === 401) {
+        // Unauthorized - redirect to login
+        console.error('Unauthorized access');
+        // window.location.href = '/login';
+      } else if (error.response.status === 404) {
+        console.error('Resource not found');
+      }
     } else if (error.request) {
-      // The request was made but no response was received
       console.error('API No Response:', error.request);
-      console.error('This could be due to:');
-      console.error('1. CORS issue');
-      console.error('2. API server not running');
-      console.error('3. Network issue');
+      console.error('Possible reasons: CORS issue, server down, network problem.');
     } else {
-      // Something happened in setting up the request
       console.error('API Setup Error:', error.message);
     }
     return Promise.reject(error);
   }
 );
 
-// Product API calls
 export const productAPI = {
-  // Get all products with optional filters
   getAllProducts: async (params = {}) => {
     try {
-      const response = await api.get('/Products', { params });
-      return Array.isArray(response.data) ? response.data : [];
-    } catch (error) {
-      console.error('Error getting products:', error);
-      return []; // Return empty array instead of throwing
+      const res = await api.get('/Products', { params });
+      return Array.isArray(res.data) ? res.data : [];
+    } catch (err) {
+      console.error('Error getting products:', err);
+      return [];
     }
   },
-
-  // Get single product by ID
   getProductById: async (id) => {
     try {
-      const response = await api.get(`/Products/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error getting product ${id}:`, error);
+      const res = await api.get(`/Products/${id}`);
+      return res.data;
+    } catch (err) {
+      console.error(`Error getting product ${id}:`, err);
       return null;
     }
   },
-
-  // Create new product
-  createProduct: async (productData) => {
+  createProduct: async (data) => {
     try {
-      const response = await api.post('/Products', productData);
-      return response.data;
-    } catch (error) {
-      console.error('Error creating product:', error);
-      throw error; // Re-throw for form to handle
+      const res = await api.post('/Products', data);
+      return res.data;
+    } catch (err) {
+      console.error('Error creating product:', err);
+      throw err;
     }
   },
-
-  // Update product
-  updateProduct: async (id, productData) => {
+  updateProduct: async (id, data) => {
     try {
-      const response = await api.put(`/Products/${id}`, productData);
-      return response.data;
-    } catch (error) {
-      console.error(`Error updating product ${id}:`, error);
-      throw error;
+      const res = await api.put(`/Products/${id}`, data);
+      return res.data;
+    } catch (err) {
+      console.error(`Error updating product ${id}:`, err);
+      throw err;
     }
   },
-
-  // Delete product
   deleteProduct: async (id) => {
     try {
       await api.delete(`/Products/${id}`);
       return true;
-    } catch (error) {
-      console.error(`Error deleting product ${id}:`, error);
+    } catch (err) {
+      console.error(`Error deleting product ${id}:`, err);
       return false;
     }
   },
-
-  // Toggle product status
   toggleProductStatus: async (id) => {
     try {
       await api.patch(`/Products/${id}/toggle-status`);
       return true;
-    } catch (error) {
-      console.error(`Error toggling product status ${id}:`, error);
+    } catch (err) {
+      console.error(`Error toggling product status ${id}:`, err);
       return false;
     }
   },
-
-  // Get products count
   getProductsCount: async () => {
     try {
-      const response = await api.get('/Products/count');
-      return response.data;
-    } catch (error) {
-      console.error('Error getting products count:', error);
+      const res = await api.get('/Products/count');
+      return res.data;
+    } catch (err) {
+      console.error('Error getting products count:', err);
       return 0;
     }
   },
-
-  // Get all categories
   getCategories: async () => {
     try {
-      const response = await api.get('/Categories');
-      return Array.isArray(response.data) ? response.data : [];
-    } catch (error) {
-      console.error('Error getting categories:', error);
-      return []; // Always return array even on error
+      const res = await api.get('/Categories');
+      console.log('api: API_BASE_URL=', API_BASE_URL+res.config.url);
+      return Array.isArray(res.data) ? res.data : [];
+    } catch (err) {
+      console.error('Error getting categories:', err);
+      return [];
     }
   }
 };
