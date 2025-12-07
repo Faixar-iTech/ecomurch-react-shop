@@ -2,13 +2,25 @@ import axios from 'axios';
 
 // Debug log to check environment variable
 console.log('VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
-console.log('All env variables:', import.meta.env);
+console.log('Environment Mode:', import.meta.env.MODE);
+console.log('Is Development:', import.meta.env.DEV);
+console.log('Is Production:', import.meta.env.PROD);
 
-// Add fallback for development
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 
-  (import.meta.env.MODE === 'development' ? 'https://localhost:44357/api' : '/api');
+// Determine API base URL based on environment
+let API_BASE_URL;
 
-console.log('Using API_BASE_URL:', API_BASE_URL);
+if (import.meta.env.VITE_API_BASE_URL) {
+  // Priority 1: Use from environment variable if explicitly set
+  API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+} else if (import.meta.env.PROD) {
+  // Priority 2: Production environment
+  API_BASE_URL = 'http://localhost:82/api';
+} else {
+  // Priority 3: Development environment (default)
+  API_BASE_URL = 'https://localhost:44357/api';
+}
+
+console.log('Final API_BASE_URL:', API_BASE_URL);
 
 // Create axios instance
 const api = axios.create({
@@ -22,11 +34,11 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    // You can add auth token here if needed
-    // const token = localStorage.getItem('token');
-    // if (token) {
-    //   config.headers.Authorization = `Bearer ${token}`;
-    // }
+    // Add auth token if needed
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => Promise.reject(error)
@@ -35,28 +47,25 @@ api.interceptors.request.use(
 // Response interceptor
 api.interceptors.response.use(
   (response) => {
-    console.log(`API Response [${response.config.method.toUpperCase()}] ${response.config.url}:`, response.status);
+    console.log(`API Success [${response.config.method.toUpperCase()}] ${response.config.url}:`, response.status);
     return response;
   },
   (error) => {
     if (error.response) {
       console.error('API Error Response:', {
         status: error.response.status,
-        data: error.response.data,
         url: error.config?.url,
+        data: error.response.data,
       });
       
       // Handle specific status codes
       if (error.response.status === 401) {
-        // Unauthorized - redirect to login
-        console.error('Unauthorized access');
-        // window.location.href = '/login';
-      } else if (error.response.status === 404) {
-        console.error('Resource not found');
+        console.error('Unauthorized - Redirecting to login');
+        localStorage.removeItem('authToken');
+        window.location.href = '/login';
       }
     } else if (error.request) {
-      console.error('API No Response:', error.request);
-      console.error('Possible reasons: CORS issue, server down, network problem.');
+      console.error('API No Response - Server may be down or network issue');
     } else {
       console.error('API Setup Error:', error.message);
     }
@@ -64,6 +73,12 @@ api.interceptors.response.use(
   }
 );
 
+// Helper function to get full URL for debugging
+export const getFullUrl = (endpoint) => {
+  return `${API_BASE_URL}${endpoint}`;
+};
+
+// API methods
 export const productAPI = {
   getAllProducts: async (params = {}) => {
     try {
@@ -131,7 +146,7 @@ export const productAPI = {
   getCategories: async () => {
     try {
       const res = await api.get('/Categories');
-      console.log('api: API_BASE_URL=', API_BASE_URL+res.config.url);
+      console.log('API Request to:', getFullUrl('/Categories'));
       return Array.isArray(res.data) ? res.data : [];
     } catch (err) {
       console.error('Error getting categories:', err);
